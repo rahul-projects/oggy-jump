@@ -48,8 +48,10 @@ document.addEventListener('mousedown', (event) => {
 });
 
 // Main Game Loop
+const gameContainer = document.querySelector('.game-container');
+
 function startGame() {
-    cockroachPosition = window.innerWidth;
+    cockroachPosition = gameContainer.clientWidth;
     cockroach.style.right = '0px';
     cockroach.style.left = cockroachPosition + 'px';
 
@@ -62,7 +64,7 @@ function startGame() {
 
         // Check if obstacle passed
         if (cockroachPosition < -50) {
-            cockroachPosition = window.innerWidth;
+            cockroachPosition = gameContainer.clientWidth;
             score += 10;
             updateScore();
 
@@ -111,7 +113,7 @@ function continueLevel() {
     isLevelUp = false;
     levelUpScreen.style.display = 'none';
     cockroach.style.display = 'block';
-    cockroachPosition = window.innerWidth;
+    cockroachPosition = gameContainer.clientWidth;
     updateScore();
 }
 
