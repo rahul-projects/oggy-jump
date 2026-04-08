@@ -2,24 +2,23 @@ const oggy = document.getElementById('oggy');
 const cockroach = document.getElementById('cockroach');
 const scoreDisplay = document.getElementById('score');
 const gameOverScreen = document.getElementById('game-over');
-const levelUpScreen = document.getElementById('level-up');
+const levelUpToast = document.getElementById('level-up-toast');
 
 let isJumping = false;
 let score = 0;
 let level = 1;
 let gameLoop;
 let isGameOver = false;
-let isLevelUp = false;
 let obstacleSpeed = 5;
-let cockroachPosition = window.innerWidth;
+let cockroachPosition = 0; // initialize safely
 
 // Handle Jumping
 function jump() {
-    if (isJumping || isGameOver || isLevelUp) return;
-
+    if (isJumping || isGameOver) return;
+    
     isJumping = true;
     oggy.classList.add('animate-jump');
-
+    
     setTimeout(() => {
         oggy.classList.remove('animate-jump');
         isJumping = false;
@@ -30,20 +29,17 @@ function jump() {
 document.addEventListener('keydown', (event) => {
     if (event.code === 'Space') {
         if (isGameOver) resetGame();
-        else if (isLevelUp) continueLevel();
         else jump();
     }
 });
 
 document.addEventListener('touchstart', (event) => {
     if (isGameOver) resetGame();
-    else if (isLevelUp) continueLevel();
     else jump();
 });
 
 document.addEventListener('mousedown', (event) => {
     if (isGameOver) resetGame();
-    else if (isLevelUp) continueLevel();
     else jump();
 });
 
@@ -51,23 +47,23 @@ document.addEventListener('mousedown', (event) => {
 const gameContainer = document.querySelector('.game-container');
 
 function startGame() {
-    cockroachPosition = gameContainer.clientWidth;
-    cockroach.style.right = '0px';
+    cockroachPosition = gameContainer.clientWidth + 100; // spawn further out
+    cockroach.style.right = 'auto'; // allow standard left positioning
     cockroach.style.left = cockroachPosition + 'px';
-
+    
     gameLoop = setInterval(() => {
-        if (isGameOver || isLevelUp) return;
+        if (isGameOver) return;
 
         // Move the cockroach
         cockroachPosition -= obstacleSpeed;
         cockroach.style.left = cockroachPosition + 'px';
 
         // Check if obstacle passed
-        if (cockroachPosition < -50) {
-            cockroachPosition = gameContainer.clientWidth;
+        if (cockroachPosition < -100) { // wait until fully off screen
+            cockroachPosition = gameContainer.clientWidth + (Math.random() * 200); // Randomize respawn slightly
             score += 10;
             updateScore();
-
+            
             // Check Level Up
             if (score > 0 && score % 100 === 0) {
                 triggerLevelUp();
@@ -84,14 +80,15 @@ function checkCollision() {
     const oggyRect = oggy.getBoundingClientRect();
     const cockroachRect = cockroach.getBoundingClientRect();
 
-    // Adjust collision box to be a bit forgiving for kids
-    const collisionToleranceX = 20;
-    const collisionToleranceY = 10;
+    // EXTREMELY forgiving collision box for 6-year-old
+    // Makes the cockroach "smaller" and oggy "smaller" logically
+    const toleranceX = 35; 
+    const toleranceY = 25;
 
     if (
-        oggyRect.right - collisionToleranceX > cockroachRect.left &&
-        oggyRect.left + collisionToleranceX < cockroachRect.right &&
-        oggyRect.bottom > cockroachRect.top + collisionToleranceY
+        oggyRect.right - toleranceX > cockroachRect.left + toleranceX &&
+        oggyRect.left + toleranceX < cockroachRect.right - toleranceX &&
+        oggyRect.bottom > cockroachRect.top + toleranceY
     ) {
         gameOver();
     }
@@ -102,19 +99,21 @@ function updateScore() {
 }
 
 function triggerLevelUp() {
-    isLevelUp = true;
-    levelUpScreen.style.display = 'block';
-    cockroach.style.display = 'none'; // hide temporarily
     level++;
-    obstacleSpeed += 2; // Increase speed
-}
-
-function continueLevel() {
-    isLevelUp = false;
-    levelUpScreen.style.display = 'none';
-    cockroach.style.display = 'block';
-    cockroachPosition = gameContainer.clientWidth;
+    obstacleSpeed += 1.5; // Increase speed slightly less abruptly
     updateScore();
+    
+    // Show toast message without pausing game
+    levelUpToast.style.display = 'block';
+    
+    // Restart animation by re-triggering reflow
+    levelUpToast.style.animation = 'none';
+    levelUpToast.offsetHeight; /* trigger reflow */
+    levelUpToast.style.animation = null; 
+
+    setTimeout(() => {
+        levelUpToast.style.display = 'none';
+    }, 2000);
 }
 
 function gameOver() {

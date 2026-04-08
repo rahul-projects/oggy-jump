@@ -13,10 +13,66 @@ body, html {
     position: relative;
     width: 100%;
     height: 100%;
-    max-width: 800px;
+    max-width: 1200px; /* Made the lane longer/wider */
     margin: 0 auto;
-    background-color: #87CEEB;
+    /* Soft pastel magical gradient background */
+    background: linear-gradient(180deg, #A1C4FD 0%, #C2E9FB 100%);
     overflow: hidden;
+}
+
+/* Background Elements */
+.sun {
+    position: absolute;
+    top: 20px;
+    right: 50px;
+    font-size: 80px;
+    animation: rotate 20s linear infinite;
+    z-index: 1;
+}
+
+.cloud {
+    position: absolute;
+    font-size: 60px;
+    opacity: 0.8;
+    z-index: 2;
+}
+
+.cloud1 { top: 40px; animation: floatCloud 25s linear infinite; }
+.cloud2 { top: 100px; animation: floatCloud 35s linear infinite; animation-delay: -10s;}
+.cloud3 { top: 20px; animation: floatCloud 20s linear infinite; animation-delay: -5s;}
+
+.rainbow {
+    position: absolute;
+    top: 50px;
+    left: 200px;
+    font-size: 100px;
+    opacity: 0.6;
+    z-index: 1;
+}
+
+.sparkle {
+    position: absolute;
+    font-size: 30px;
+    z-index: 2;
+    animation: twinkle 2s alternate infinite;
+}
+
+.sparkle1 { top: 150px; left: 100px; }
+.sparkle2 { top: 80px; right: 200px; animation-delay: 1s; }
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes floatCloud {
+    from { right: -100px; }
+    to { right: 100%; }
+}
+
+@keyframes twinkle {
+    0% { opacity: 0.3; transform: scale(0.8); }
+    100% { opacity: 1; transform: scale(1.2); }
 }
 
 #ground {
@@ -71,7 +127,7 @@ body, html {
     z-index: 20;
 }
 
-#game-over, #level-up {
+#game-over {
     display: none;
     position: absolute;
     top: 50%;
@@ -87,4 +143,30 @@ body, html {
     border-radius: 15px;
     z-index: 30;
     cursor: pointer;
+}
+
+#level-up-toast {
+    display: none;
+    position: absolute;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 30px;
+    font-weight: bold;
+    color: #FFD700;
+    text-align: center;
+    text-shadow: 2px 2px 4px #FF4500;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 10px 20px;
+    border-radius: 20px;
+    border: 3px solid #FFD700;
+    z-index: 30;
+    animation: fadeInOut 2s forwards;
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; top: 60px; }
+    20% { opacity: 1; top: 80px; }
+    80% { opacity: 1; top: 80px; }
+    100% { opacity: 0; top: 60px; }
 }
