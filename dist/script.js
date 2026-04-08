@@ -15,10 +15,10 @@ let cockroachPosition = 0; // initialize safely
 // Handle Jumping
 function jump() {
     if (isJumping || isGameOver) return;
-
+    
     isJumping = true;
     oggy.classList.add('animate-jump');
-
+    
     setTimeout(() => {
         oggy.classList.remove('animate-jump');
         isJumping = false;
@@ -50,7 +50,7 @@ function startGame() {
     cockroachPosition = gameContainer.clientWidth + 100; // spawn further out
     cockroach.style.right = 'auto'; // allow standard left positioning
     cockroach.style.left = cockroachPosition + 'px';
-
+    
     gameLoop = setInterval(() => {
         if (isGameOver) return;
 
@@ -63,7 +63,7 @@ function startGame() {
             cockroachPosition = gameContainer.clientWidth + (Math.random() * 200); // Randomize respawn slightly
             score += 10;
             updateScore();
-
+            
             // Check Level Up
             if (score > 0 && score % 100 === 0) {
                 triggerLevelUp();
@@ -82,7 +82,7 @@ function checkCollision() {
 
     // The previous tolerance was way too high making collision impossible.
     // Let's use a moderate tolerance for kids.
-    const toleranceX = 15;
+    const toleranceX = 15; 
     const toleranceY = 10;
 
     if (
@@ -102,14 +102,14 @@ function triggerLevelUp() {
     level++;
     obstacleSpeed += 1.5; // Increase speed slightly less abruptly
     updateScore();
-
+    
     // Show toast message without pausing game
     levelUpToast.style.display = 'block';
-
+    
     // Restart animation by re-triggering reflow
     levelUpToast.style.animation = 'none';
     levelUpToast.offsetHeight; /* trigger reflow */
-    levelUpToast.style.animation = null;
+    levelUpToast.style.animation = null; 
 
     setTimeout(() => {
         levelUpToast.style.display = 'none';
