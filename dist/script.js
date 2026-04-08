@@ -16,19 +16,29 @@ let animationId;
 const GRAVITY = 0.8;
 const JUMP_STRENGTH = -15;
 
-// Resize canvas to match wrapper
+// Resize canvas to match wrapper safely
 function resize() {
     const wrapper = document.querySelector('.game-wrapper');
-    canvas.width = wrapper.clientWidth;
-    canvas.height = wrapper.clientHeight;
+    // On some desktop browsers, clientWidth might not be immediately available
+    // Fallback to window dimensions if wrapper has no height
+    canvas.width = wrapper.clientWidth || window.innerWidth || 800;
+    canvas.height = wrapper.clientHeight || window.innerHeight || 600;
+    
+    // Adjust ground position when resizing
+    // Make sure ground and oggy are defined before accessing them
+    if (typeof ground !== 'undefined') {
+        ground.y = canvas.height - ground.height;
+    }
+    if (typeof oggy !== 'undefined' && typeof ground !== 'undefined' && oggy.y > ground.y - oggy.height) {
+        oggy.y = ground.y - oggy.height;
+    }
 }
 window.addEventListener('resize', resize);
-resize();
 
 // --- Game Objects ---
 
 // The Ground
-const ground = {
+let ground = {
     height: 100,
     y: 0,
     draw() {
@@ -42,7 +52,7 @@ const ground = {
 };
 
 // Oggy Character (Player)
-const oggy = {
+let oggy = {
     width: 60,
     height: 60,
     x: 80,
@@ -238,10 +248,13 @@ document.addEventListener('touchstart', (e) => {
 }, { passive: false });
 
 
-// Initialize Game
-oggy.y = canvas.height - 100 - oggy.height; // Set initial Y correctly based on ground
-updateScoreUI();
-animate();
+// Initialize Game Safely once DOM is fully loaded and sized
+window.addEventListener('load', () => {
+    resize(); // Force a resize check when everything is loaded
+    oggy.y = canvas.height - 100 - oggy.height; // Set initial Y correctly based on ground
+    updateScoreUI();
+    animate();
+});
 
 // Service Worker Registration for PWA
 if ('serviceWorker' in navigator) {
