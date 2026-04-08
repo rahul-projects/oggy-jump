@@ -80,10 +80,10 @@ function checkCollision() {
     const oggyRect = oggy.getBoundingClientRect();
     const cockroachRect = cockroach.getBoundingClientRect();
 
-    // EXTREMELY forgiving collision box for 6-year-old
-    // Makes the cockroach "smaller" and oggy "smaller" logically
-    const toleranceX = 35; 
-    const toleranceY = 25;
+    // The previous tolerance was way too high making collision impossible.
+    // Let's use a moderate tolerance for kids.
+    const toleranceX = 15; 
+    const toleranceY = 10;
 
     if (
         oggyRect.right - toleranceX > cockroachRect.left + toleranceX &&
