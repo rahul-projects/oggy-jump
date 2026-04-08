@@ -35,14 +35,102 @@ function resize() {
 }
 window.addEventListener('resize', resize);
 
+// --- Sound Effects (Web Audio API Synthesizer) ---
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+const audioCtx = new AudioContext();
+
+function playSound(type) {
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    const now = audioCtx.currentTime;
+
+    if (type === 'jump') {
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(300, now);
+        oscillator.frequency.exponentialRampToValueAtTime(600, now + 0.1);
+        gainNode.gain.setValueAtTime(0.3, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+        oscillator.start(now);
+        oscillator.stop(now + 0.1);
+    } else if (type === 'score') {
+        oscillator.type = 'square';
+        oscillator.frequency.setValueAtTime(800, now);
+        oscillator.frequency.setValueAtTime(1200, now + 0.05);
+        gainNode.gain.setValueAtTime(0.1, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+        oscillator.start(now);
+        oscillator.stop(now + 0.1);
+    } else if (type === 'levelup') {
+        oscillator.type = 'triangle';
+        oscillator.frequency.setValueAtTime(400, now);
+        oscillator.frequency.linearRampToValueAtTime(800, now + 0.1);
+        oscillator.frequency.linearRampToValueAtTime(1200, now + 0.2);
+        gainNode.gain.setValueAtTime(0.2, now);
+        gainNode.gain.linearRampToValueAtTime(0.01, now + 0.3);
+        oscillator.start(now);
+        oscillator.stop(now + 0.3);
+    } else if (type === 'gameover') {
+        oscillator.type = 'sawtooth';
+        oscillator.frequency.setValueAtTime(300, now);
+        oscillator.frequency.exponentialRampToValueAtTime(50, now + 0.5);
+        gainNode.gain.setValueAtTime(0.3, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+        oscillator.start(now);
+        oscillator.stop(now + 0.5);
+    }
+}
+
 // --- Load Assets ---
 const oggyImage = new Image();
 oggyImage.src = 'oggy.svg';
 
 const cockroachImage = new Image();
 cockroachImage.src = 'cockroach.svg';
+const ratImage = new Image();
+ratImage.src = 'rat.svg';
+const spiderImage = new Image();
+spiderImage.src = 'spider.svg';
+const snakeImage = new Image();
+snakeImage.src = 'snake.svg';
+
+const obstacleImages = [cockroachImage, ratImage, spiderImage, snakeImage];
+
+// Handle Character Selection
+const charSelect = document.getElementById('char-select');
+if (charSelect) {
+    charSelect.addEventListener('change', (e) => {
+        oggyImage.src = e.target.value;
+    });
+}
 
 // --- Game Objects ---
+
+// Level themes
+const levelThemes = [
+    { sky: 'linear-gradient(180deg, #A1C4FD 0%, #C2E9FB 100%)', dirt: '#8B4513', top: '#228B22' }, // Level 1: Day
+    { sky: 'linear-gradient(180deg, #FF7E5F 0%, #FEB47B 100%)', dirt: '#5C3A21', top: '#8B4513' }, // Level 2: Sunset
+    { sky: 'linear-gradient(180deg, #2B5876 0%, #4E4376 100%)', dirt: '#2F4F4F', top: '#556B2F' }, // Level 3: Twilight
+    { sky: 'linear-gradient(180deg, #000428 0%, #004E92 100%)', dirt: '#1A1A1A', top: '#006400' }, // Level 4: Night
+    { sky: 'linear-gradient(180deg, #DA4453 0%, #89216B 100%)', dirt: '#4A0E4E', top: '#800080' }  // Level 5: Alien
+];
+
+function getTheme() {
+    const themeIndex = (level - 1) % levelThemes.length;
+    return levelThemes[themeIndex];
+}
+
+function updateThemeUI() {
+    const theme = getTheme();
+    document.querySelector('.game-wrapper').style.background = theme.sky;
+}
 
 // The Ground
 let ground = {
@@ -50,11 +138,21 @@ let ground = {
     y: 0,
     draw() {
         this.y = canvas.height - this.height;
-        ctx.fillStyle = '#8B4513'; // Brown dirt
+        const theme = getTheme();
+
+        ctx.fillStyle = theme.dirt; // Dirt color based on theme
         ctx.fillRect(0, this.y, canvas.width, this.height);
         
-        ctx.fillStyle = '#228B22'; // Green grass
+        ctx.fillStyle = theme.top; // Grass/Top color based on theme
         ctx.fillRect(0, this.y, canvas.width, 15);
+
+        // Add some pattern/lane effect based on frames to show movement
+        ctx.fillStyle = 'rgba(0,0,0,0.2)';
+        for(let i=0; i<canvas.width; i+=40) {
+            let offset = (i - (frames * gameSpeed * 0.5)) % 40;
+            if(offset < 0) offset += 40;
+            ctx.fillRect(offset, this.y, 20, 15);
+        }
     }
 };
 
@@ -68,6 +166,7 @@ let oggy = {
     jump() {
         if (this.y === ground.y - this.height) { // Only jump if on the ground
             this.vy = JUMP_STRENGTH;
+            playSound('jump');
         }
     },
     update() {
@@ -96,6 +195,12 @@ class Obstacle {
         this.x = canvas.width + Math.random() * 200; // Spawn offscreen
         this.y = ground.y - this.height;
         this.passed = false;
+
+        // Pick an obstacle type based on the current level.
+        // Higher levels unlock more obstacle types.
+        let availableObstacles = Math.min(level, obstacleImages.length);
+        let obsIndex = Math.floor(Math.random() * availableObstacles);
+        this.image = obstacleImages[obsIndex];
     }
 
     update() {
@@ -103,7 +208,7 @@ class Obstacle {
     }
 
     draw() {
-        ctx.drawImage(cockroachImage, this.x, this.y, this.width, this.height);
+        ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
     }
 }
 
@@ -130,10 +235,32 @@ function drawBackground() {
 
 function handleObstacles() {
     // Spawn new obstacles
-    if (frames % Math.floor(100 * (6/gameSpeed)) === 0) { 
-        // More randomized spacing
-        if (Math.random() > 0.3) {
-            obstacles.push(new Obstacle());
+    // Add a grace period at the beginning (e.g., first 100 frames)
+    if (frames > 100) {
+        // Slow start: base spawn rate is lower initially, speeds up later
+        let spawnRate = Math.floor(120 * (6/gameSpeed));
+
+        // Less frequent obstacles initially, getting more frequent as speed increases
+        if (frames % spawnRate === 0) {
+            // More randomized spacing, easier at start
+            let spawnChance = 0.4 + (level * 0.05); // increases with level
+            if (spawnChance > 0.8) spawnChance = 0.8; // Cap at 80%
+
+            if (Math.random() < spawnChance) {
+                // Ensure min distance between obstacles
+                let canSpawn = true;
+                if (obstacles.length > 0) {
+                    let lastObs = obstacles[obstacles.length - 1];
+                    // Make sure there is enough gap (e.g., at least 250px)
+                    if (canvas.width - lastObs.x < 250) {
+                        canSpawn = false;
+                    }
+                }
+
+                if (canSpawn) {
+                    obstacles.push(new Obstacle());
+                }
+            }
         }
     }
 
@@ -159,6 +286,7 @@ function handleObstacles() {
         if (obs.x + obs.width < oggy.x && !obs.passed) {
             score += 10;
             obs.passed = true;
+            playSound('score');
             checkLevelUp();
             updateScoreUI();
         }
@@ -177,6 +305,8 @@ function checkLevelUp() {
         level++;
         gameSpeed += 1.5; // Increase speed
         updateScoreUI();
+        playSound('levelup');
+        updateThemeUI();
         
         // Show Toast
         levelUpToast.style.display = 'block';
@@ -192,6 +322,7 @@ function checkLevelUp() {
 
 function triggerGameOver() {
     isGameOver = true;
+    playSound('gameover');
     gameOverScreen.style.display = 'block';
 }
 
@@ -205,6 +336,7 @@ function resetGame() {
     oggy.y = ground.y - oggy.height; // Place on ground
     oggy.vy = 0;
     gameOverScreen.style.display = 'none';
+    updateThemeUI();
     updateScoreUI();
     animate(); // Restart loop
 }
@@ -252,6 +384,7 @@ document.addEventListener('touchstart', (e) => {
 window.addEventListener('load', () => {
     resize(); // Force a resize check when everything is loaded
     oggy.y = canvas.height - 100 - oggy.height; // Set initial Y correctly based on ground
+    updateThemeUI();
     updateScoreUI();
     animate();
 });
