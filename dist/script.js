@@ -35,6 +35,13 @@ function resize() {
 }
 window.addEventListener('resize', resize);
 
+// --- Load Assets ---
+const oggyImage = new Image();
+oggyImage.src = 'oggy.svg';
+
+const cockroachImage = new Image();
+cockroachImage.src = 'cockroach.svg';
+
 // --- Game Objects ---
 
 // The Ground
@@ -75,11 +82,7 @@ let oggy = {
         }
     },
     draw() {
-        ctx.font = '60px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        // Draw emoji centered on logical coordinate
-        ctx.fillText('🐱', this.x + this.width/2, this.y + this.height/2);
+        ctx.drawImage(oggyImage, this.x, this.y, this.width, this.height);
     }
 };
 
@@ -100,10 +103,7 @@ class Obstacle {
     }
 
     draw() {
-        ctx.font = '40px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('🪳', this.x + this.width/2, this.y + this.height/2);
+        ctx.drawImage(cockroachImage, this.x, this.y, this.width, this.height);
     }
 }
 
