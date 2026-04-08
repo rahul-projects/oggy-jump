@@ -4,145 +4,46 @@ body, html {
     width: 100%;
     height: 100%;
     overflow: hidden;
-    background-color: #87CEEB; /* Sky blue */
+    background-color: #A1C4FD;
     font-family: 'Comic Sans MS', cursive, sans-serif;
-    touch-action: none; /* Prevent scrolling on touch */
+    touch-action: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-.game-container {
+.game-wrapper {
     position: relative;
     width: 100%;
+    max-width: 1200px;
     height: 100%;
-    max-width: 1200px; /* Made the lane longer/wider */
-    margin: 0 auto;
-    /* Soft pastel magical gradient background */
     background: linear-gradient(180deg, #A1C4FD 0%, #C2E9FB 100%);
-    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0,0,0,0.2);
 }
 
-/* Background Elements */
-.sun {
-    position: absolute;
-    top: 20px;
-    right: 50px;
-    font-size: 80px;
-    animation: rotate 20s linear infinite;
-    z-index: 1;
-}
-
-.cloud {
-    position: absolute;
-    font-size: 60px;
-    opacity: 0.8;
-    z-index: 2;
-}
-
-.cloud1 { top: 40px; animation: floatCloud 25s linear infinite; }
-.cloud2 { top: 100px; animation: floatCloud 35s linear infinite; animation-delay: -10s;}
-.cloud3 { top: 20px; animation: floatCloud 20s linear infinite; animation-delay: -5s;}
-
-.rainbow {
-    position: absolute;
-    top: 50px;
-    left: 200px;
-    font-size: 100px;
-    opacity: 0.6;
-    z-index: 1;
-}
-
-.sparkle {
-    position: absolute;
-    font-size: 30px;
-    z-index: 2;
-    animation: twinkle 2s alternate infinite;
-}
-
-.sparkle1 { top: 150px; left: 100px; }
-.sparkle2 { top: 80px; right: 200px; animation-delay: 1s; }
-
-@keyframes rotate {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
-@keyframes floatCloud {
-    from { right: -100px; }
-    to { right: 100%; }
-}
-
-@keyframes twinkle {
-    0% { opacity: 0.3; transform: scale(0.8); }
-    100% { opacity: 1; transform: scale(1.2); }
-}
-
-#ground {
-    position: absolute;
-    bottom: 0;
+canvas {
+    display: block;
     width: 100%;
-    height: 20%;
-    background-color: #8B4513; /* Brown ground */
-    border-top: 10px solid #228B22; /* Green grass */
+    height: 100%;
 }
 
-#oggy {
+#ui-layer {
     position: absolute;
-    bottom: 20%;
-    left: 10%;
-    font-size: 60px;
-    line-height: 1;
-    z-index: 10;
-    transition: bottom 0.1s linear; /* Smooth jumping */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* Let clicks pass through to canvas if needed, though we listen on document */
 }
 
-#cockroach {
-    position: absolute;
-    bottom: 20%;
-    right: -100px; /* Start off-screen */
-    font-size: 40px;
-    line-height: 1;
-    z-index: 10;
-}
-
-/* Animations */
-.animate-jump {
-    animation: jump 0.6s cubic-bezier(0.1, 0.7, 0.1, 1);
-}
-
-@keyframes jump {
-    0% { bottom: 20%; }
-    40% { bottom: 50%; }
-    50% { bottom: 50%; }
-    60% { bottom: 50%; }
-    100% { bottom: 20%; }
-}
-
-#score {
+#score-display {
     position: absolute;
     top: 20px;
     left: 20px;
-    font-size: 24px;
+    font-size: 28px;
     font-weight: bold;
     color: white;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-    z-index: 20;
-}
-
-#game-over {
-    display: none;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 40px;
-    font-weight: bold;
-    color: white;
-    text-align: center;
-    text-shadow: 3px 3px 6px rgba(0,0,0,0.8);
-    background: rgba(0, 0, 0, 0.5);
-    padding: 20px;
-    border-radius: 15px;
-    z-index: 30;
-    cursor: pointer;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
 }
 
 #level-up-toast {
@@ -151,22 +52,47 @@ body, html {
     top: 80px;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 30px;
+    font-size: 36px;
     font-weight: bold;
     color: #FFD700;
-    text-align: center;
     text-shadow: 2px 2px 4px #FF4500;
-    background: rgba(255, 255, 255, 0.8);
-    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 10px 30px;
     border-radius: 20px;
     border: 3px solid #FFD700;
-    z-index: 30;
-    animation: fadeInOut 2s forwards;
+    animation: slideUpFade 2s forwards;
 }
 
-@keyframes fadeInOut {
+@keyframes slideUpFade {
     0% { opacity: 0; top: 60px; }
     20% { opacity: 1; top: 80px; }
     80% { opacity: 1; top: 80px; }
-    100% { opacity: 0; top: 60px; }
+    100% { opacity: 0; top: 40px; }
+}
+
+#game-over {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 40px;
+    border-radius: 20px;
+    color: white;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+#game-over h1 {
+    margin: 0 0 15px 0;
+    font-size: 48px;
+    color: #FF6B6B;
+}
+
+#game-over p {
+    margin: 0;
+    font-size: 24px;
 }
