@@ -23,7 +23,7 @@ function resize() {
     // Fallback to window dimensions if wrapper has no height
     canvas.width = wrapper.clientWidth || window.innerWidth || 800;
     canvas.height = wrapper.clientHeight || window.innerHeight || 600;
-
+    
     // Adjust ground position when resizing
     // Make sure ground and oggy are defined before accessing them
     if (typeof ground !== 'undefined') {
@@ -52,7 +52,7 @@ let ground = {
         this.y = canvas.height - this.height;
         ctx.fillStyle = '#8B4513'; // Brown dirt
         ctx.fillRect(0, this.y, canvas.width, this.height);
-
+        
         ctx.fillStyle = '#228B22'; // Green grass
         ctx.fillRect(0, this.y, canvas.width, 15);
     }
@@ -130,7 +130,7 @@ function drawBackground() {
 
 function handleObstacles() {
     // Spawn new obstacles
-    if (frames % Math.floor(100 * (6/gameSpeed)) === 0) {
+    if (frames % Math.floor(100 * (6/gameSpeed)) === 0) { 
         // More randomized spacing
         if (Math.random() > 0.3) {
             obstacles.push(new Obstacle());
@@ -177,12 +177,12 @@ function checkLevelUp() {
         level++;
         gameSpeed += 1.5; // Increase speed
         updateScoreUI();
-
+        
         // Show Toast
         levelUpToast.style.display = 'block';
         levelUpToast.style.animation = 'none';
         levelUpToast.offsetHeight; // reflow
-        levelUpToast.style.animation = null;
+        levelUpToast.style.animation = null; 
 
         setTimeout(() => {
             levelUpToast.style.display = 'none';
@@ -215,10 +215,10 @@ function animate() {
 
     drawBackground();
     ground.draw();
-
+    
     oggy.update();
     oggy.draw();
-
+    
     handleObstacles();
 
     frames++;
