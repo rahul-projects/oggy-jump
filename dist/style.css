@@ -36,6 +36,27 @@ canvas {
     pointer-events: none; /* Let clicks pass through to canvas if needed, though we listen on document */
 }
 
+#character-selector {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    pointer-events: auto;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 10px;
+    border-radius: 10px;
+    font-weight: bold;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+#character-selector select {
+    font-size: 16px;
+    font-family: inherit;
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+}
+
 #score-display {
     position: absolute;
     top: 20px;
